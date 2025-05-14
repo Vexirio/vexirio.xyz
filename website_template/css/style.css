@@ -1,0 +1,82 @@
+:root {
+  --color-bg: #1c1c1c;         /* eerie black — фон */
+  --color-surface: #2a2a2a;    /* немного светлее для секций */
+  --color-text: #fafaff;       /* ghost white — основной текст */
+  --color-muted: #daddd8;      /* platinum — вторичный текст */
+  --color-accent: #ecebe4;     /* alabaster — акцентные элементы */
+  --color-border: #eef0f2;     /* antiflash white — границы */
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+header, footer {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  padding: 15px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+}
+
+nav a {
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: var(--color-accent);
+}
+
+main {
+  margin: 30px 0;
+}
+
+section {
+  background-color: var(--color-surface);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+footer {
+  margin-top: 40px;
+  font-size: 0.9rem;
+}
+
+
+.image-container {
+  background-color: var(--color-surface);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+.image-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px; /* rounded corners for the image */
+}
+
+.image-container:hover {
+  border-color: var(--color-accent); /* change border color on hover */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); /* enhanced shadow on hover */
+}
