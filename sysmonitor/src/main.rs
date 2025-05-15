@@ -1,5 +1,5 @@
 use axum::{
-    http::{Method, header},
+    http::{Method, header, HeaderValue},
     routing::get,
     Router,
     response::IntoResponse,
@@ -34,7 +34,6 @@ struct ProcessInfo {
     name: String,
 }
 
-// Сбор данных о системе
 async fn get_system_info(sys: Arc<RwLock<System>>) -> SystemInfo {
     let sys = sys.read().await;
     let networks = Networks::new_with_refreshed_list();
@@ -72,66 +71,34 @@ async fn get_system_info(sys: Arc<RwLock<System>>) -> SystemInfo {
     }
 }
 
-// Обработчик
 async fn system_handler(sys: Arc<RwLock<System>>) -> impl IntoResponse {
     let info = get_system_info(sys).await;
     axum::Json(info)
 }
 
-// Основная функция
 #[tokio::main]
 async fn main() {
     let sys = Arc::new(RwLock::new(System::new_all()));
     let sys_clone = sys.clone();
+	let cors = CorsLayer::new()
+      .allow_origin(Any) // <== Разрешаем всё (на время отладки)
+  	  .allow_methods([Method::GET])
+  	  .allow_headers([header::CONTENT_TYPE]);
 
-    // CORS
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods([Method::GET])
-        .allow_headers([header::CONTENT_TYPE]);
 
-    // Маршруты
     let app = Router::new()
-        .route("/system", get(move || system_handler(sys_clone.clone())))
+        .route("/api/system", get(move || system_handler(sys_clone.clone())))
         .layer(cors);
 
-    // Сервер
-    tokio::spawn(async move {
-        let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-        println!("Server running at http://{}", addr);
-        axum::Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await
-            .unwrap();
-    });
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    println!("Server running at http://{}", addr);
 
-    // Основной цикл
-    loop {
-        let mut sys = sys.write().await;
-        sys.refresh_all();
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+    
+    // 📌 Важно: если у вас основной цикл, он должен быть в другом таске.
+}
 
-        println!("=> system:");
-        println!("total memory: {} bytes", sys.total_memory());
-        println!("used memory : {} bytes", sys.used_memory());
-
-        let networks = Networks::new_with_refreshed_list();
-        println!("=> networks:");
-        for (name, data) in &networks {
-            println!("{name}: {} B down / {} B up", data.total_received(), data.total_transmitted());
-        }
-
-        let components = Components::new_with_refreshed_list();
-        println!("=> components:");
-        for component in &components {
-            println!("{component:?}");
-        }
-
-        if let Ok(processes) = all_processes() {
-            for p in processes {
-                println!("PID: {}, Name: {}", p.stat.pid, p.stat.comm);
-            }
-        }
-
-        sleep(Duration::from_secs(5)).await;
-    }
 }
